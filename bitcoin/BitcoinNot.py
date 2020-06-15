@@ -8,6 +8,7 @@ import json
 from datetime import datetime
 import nexmo
 from dotenv import load_dotenv
+import argparse
 # TO load enviourmental variables
 load_dotenv()
 
@@ -37,6 +38,13 @@ session.headers.update(headers)
 
 # IFTTT URL
 IFTTT_WEBHOOKS_URL = os.getenv("IFTTT")
+
+parser = argparse.ArgumentParser(
+    description="Bitcoin Notifier"
+)
+parser.add_argument('app', type=str)
+args = parser.parse_args()
+
 
 # Function to get latest bitcoin prices
 
@@ -107,7 +115,15 @@ def mainFunc():
         # To send bitcoin price alert on ifttt app, Twitter and Email.
         # Event Name- 'bitcoin_price_emergency'
         if price < thresholdPrice:
-            IftttPost('bitcoin_price_emergency', price)
+            if args.app == "ifttt":
+                # For alert on IFTTT app
+                IftttPost('bitcoin_price_ifttt', price)
+            elif args.app == "email":
+                # For alert on Email
+                IftttPost('bitcoin_price_email', price)
+            elif args.app == "twitter":
+                # For alert on Twitter
+                IftttPost('bitcoin_price_twitter', price)
         # For sending 3 consicutive alert of bitcoin price
         if (len(bitcoin_history) == 3):  # for maximum lines of 3 notifications
             # To send alert on Slack Workspace Bitcoin InFO.
